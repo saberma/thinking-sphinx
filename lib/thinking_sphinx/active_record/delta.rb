@@ -18,10 +18,11 @@ module ThinkingSphinx
           class << self
             # Handle after_commit callbacks - call all the registered callbacks.
             # 
-            def after_commit(*callbacks, &block)
-              callbacks << block if block_given?
-              write_inheritable_array(:after_commit, callbacks)
-            end
+            #FIX:delta index didn't work
+            #def after_commit(*callbacks, &block)
+            #  callbacks << block if block_given?
+            #  write_inheritable_array(:after_commit, callbacks)
+            #end
           end
           
           # Normal boolean save wrapped in a handler for the after_commit
