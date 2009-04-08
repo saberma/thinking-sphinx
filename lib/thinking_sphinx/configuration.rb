@@ -35,7 +35,7 @@ module ThinkingSphinx
   class Configuration
     attr_accessor :config_file, :searchd_log_file, :query_log_file,
       :pid_file, :searchd_file_path, :address, :port, :allow_star, :mem_limit,
-      :max_matches, :morphology, :charset_type, :charset_table, :app_root
+      :max_matches, :morphology, :charset_type, :charset_dictpath, :charset_table, :app_root
     
     attr_reader :environment
     
@@ -58,6 +58,7 @@ module ThinkingSphinx
       self.max_matches       = 1000
       self.morphology        = "stem_en"
       self.charset_type      = "utf-8"
+      self.charset_dictpath  = nil
       self.charset_table     = nil
       
       parse_config
@@ -137,7 +138,7 @@ source #{model.name.downcase}_#{i}_core
   sql_pass = #{database_conf[:password]}
   sql_db   = #{database_conf[:database]}
 
-  sql_query_pre    = #{charset_type == "utf-8" && adapter == "mysql" ? "SET NAMES utf8" : ""}
+  sql_query_pre    = #{(["utf-8","zh_cn.utf-8"].include?(charset_type)) && adapter == "mysql" ? "SET NAMES utf8" : ""}
   sql_query_pre    = #{index.to_sql_query_pre}
   sql_query        = #{index.to_sql.gsub(/\n/, ' ')}
   sql_query_range  = #{index.to_sql_query_range}
@@ -151,7 +152,7 @@ source #{model.name.downcase}_#{i}_core
 
 source #{model.name.downcase}_#{i}_delta : #{model.name.downcase}_#{i}_core
 {
-  sql_query_pre    = #{charset_type == "utf-8" && adapter == "mysql" ? "SET NAMES utf8" : ""}
+  sql_query_pre    = #{(["utf-8","zh_cn.utf-8"].include?(charset_type)) && adapter == "mysql" ? "SET NAMES utf8" : ""}
   sql_query        = #{index.to_sql(:delta => true).gsub(/\n/, ' ')}
   sql_query_range  = #{index.to_sql_query_range :delta => true}
 }
@@ -171,6 +172,18 @@ index #{model.name.downcase}_core
   path = #{self.searchd_file_path}/#{model.name.downcase}_core
   charset_type = #{self.charset_type}
   INDEX
+          unless self.charset_dictpath.nil?
+            file.write <<-INDEX
+<<<<<<< HEAD:lib/thinking_sphinx/configuration.rb
+  charset_dictpath  = #{self.charset_dictpath}
+            INDEX
+          end
+=======
+            charset_dictpath  = #{self.charset_dictpath}
+            INDEX
+          end
+          
+>>>>>>> 967e502... support charset_dictpath, which libmmseg need:lib/thinking_sphinx/configuration.rb
           unless self.charset_table.nil?
             file.write <<-INDEX
   charset_table  = #{self.charset_table}
@@ -246,7 +259,7 @@ index #{model.name.downcase}
       path = "#{app_root}/config/sphinx.yml"
       return unless File.exists?(path)
       
-      conf = YAML.load(File.open(path))[environment]
+      conf = YAML.load(ERB.new(File.open(path).readlines.to_s).result)[environment]
       
       conf.each do |key,value|
         self.send("#{key}=", value) if self.methods.include?("#{key}=")
