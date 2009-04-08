@@ -174,16 +174,9 @@ index #{model.name.downcase}_core
   INDEX
           unless self.charset_dictpath.nil?
             file.write <<-INDEX
-<<<<<<< HEAD:lib/thinking_sphinx/configuration.rb
   charset_dictpath  = #{self.charset_dictpath}
             INDEX
           end
-=======
-            charset_dictpath  = #{self.charset_dictpath}
-            INDEX
-          end
-          
->>>>>>> 967e502... support charset_dictpath, which libmmseg need:lib/thinking_sphinx/configuration.rb
           unless self.charset_table.nil?
             file.write <<-INDEX
   charset_table  = #{self.charset_table}
