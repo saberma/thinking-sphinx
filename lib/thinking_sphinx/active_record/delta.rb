@@ -11,51 +11,8 @@ module ThinkingSphinx
       #
       def self.included(base)
         base.class_eval do
-          # This is something added since Rails 2.0.2 - we need to register the
-          # callback with ActiveRecord explicitly.
-          define_callbacks "after_commit" if respond_to?(:define_callbacks)
-          
-          class << self
-            # Handle after_commit callbacks - call all the registered callbacks.
-            # 
-            #FIX:delta index didn't work
-            #def after_commit(*callbacks, &block)
-            #  callbacks << block if block_given?
-            #  write_inheritable_array(:after_commit, callbacks)
-            #end
-          end
-          
-          # Normal boolean save wrapped in a handler for the after_commit
-          # callback.
-          # 
-          def save_with_after_commit_callback(*args)
-            value = save_without_after_commit_callback(*args)
-            callback(:after_commit) if value
-            return value
-          end
-          
-          alias_method_chain :save, :after_commit_callback
-          
-          # Forceful save wrapped in a handler for the after_commit callback.
-          #
-          def save_with_after_commit_callback!(*args)
-            value = save_without_after_commit_callback!(*args)
-            callback(:after_commit) if value
-            return value
-          end
-          
-          alias_method_chain :save!, :after_commit_callback
-          
-          # Normal destroy wrapped in a handler for the after_commit callback.
-          #
-          def destroy_with_after_commit_callback
-            value = destroy_without_after_commit_callback
-            callback(:after_commit) if value
-            return value
-          end
-          
-          alias_method_chain :destroy, :after_commit_callback
-          
+          #use after_commit plugin
+
           private
           
           # Set the delta value for the model to be true.
